@@ -1,0 +1,36 @@
+#!/bin/bash
+# uninstall blockit
+
+# this script requires root elevation
+if [ "$EUID" -ne 0 ]
+then
+    echo "please run as root"
+    exit 1
+fi
+
+# check if install directory exists
+if [ ! -d ~/.blockit ]
+then
+    echo "blockit is not installed"
+    exit 1
+fi
+
+# try to unblock sites (if user blocked some)
+if ! ~/.blockit/unblock
+then
+    echo "failed to unblock sites, please manually modify /etc/hosts to unblock"
+fi
+
+# restore ~/.bashrc backup file
+if [ -e ~/.blockit/.bashrc.backup ]
+then
+    mv ~/.blockit/.bashrc.backup ~/.bashrc
+    source ~/.bashrc
+else
+    echo "failed to find ~/.blockit/.bashrc.backup, please manually modify ~/.bashrc to remove aliases"
+fi
+
+# remove backup /etc/hosts.backup file
+sudo rm -rf /etc/hosts.backup
+
+echo "uninstallation complete"

@@ -1,0 +1,19 @@
+#!/bin/bash
+
+# this script requires root elevation
+if [ "$EUID" -ne 0 ]
+then
+    echo "please run as root"
+    exit 1
+fi
+
+# restore back-up hosts file, if it exists.
+if [ -e /etc/hosts.backup ]
+then
+    sudo cp /etc/hosts.backup /etc/hosts
+    echo "unblocked sites"
+else
+    echo "backup file not found, you haven't blocked any sites"
+fi
+
+exit 0

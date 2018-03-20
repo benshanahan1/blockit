@@ -1,0 +1,70 @@
+#!/bin/bash
+
+# if user requests 'list' as an argument, just cat ~/.blockit/sites.txt to the terminal
+if [ "$1" == "list" ]
+then
+    echo "blocked websites:"
+    cat ~/.blockit/sites.txt
+    exit 1
+fi
+
+# this script requires root elevation
+if [ "$EUID" -ne 0 ]
+then
+    echo "please run as root"
+    exit 1
+fi
+
+# restore backup to start fresh
+if [ -e /etc/hosts.backup ]
+then
+    sudo cp /etc/hosts.backup /etc/hosts
+fi
+
+if [ "$1" == "" ] || [ "$1" == "all" ]
+then
+    # block all sites listed in ~/.blockit/sites.txt
+    IS_ALL=1
+else
+    # if a site is given, append it to the text file
+    # but first, verify that there is no www at beginning
+    IS_ALL=0
+    if [[ "$1" = *"www."* ]]
+    then
+        echo "please do not include 'www' in the address to block"
+        exit 1
+    fi
+    echo "$1" >> ~/.blockit/sites.txt
+    echo "www.$1" >> ~/.blockit/sites.txt
+fi
+
+# load ~/.blockit/sites.txt into an array
+if [ -e ~/.blockit/sites.txt ]
+then
+    # read blocked sites from textfile
+    readarray -t sites < ~/.blockit/sites.txt
+else
+    # sites textfile does not exist
+    echo "could not find ~/.blockit/sites.txt on your computer"
+    exit 1
+fi
+
+# block 'em (iterate through sites array)
+sudo echo "# block these websites" >> /etc/hosts
+for i in "${sites[@]}"
+do
+    if ! sudo echo "0.0.0.0 $i" >> /etc/hosts
+    then
+        echo "an error occurred while modifying /etc/hosts"
+        exit 1
+    fi
+done
+
+if [ "$IS_ALL" == 1 ]
+then
+    echo "successfully blocked all default sites"
+else
+    echo "successfully blocked $1"
+fi
+
+exit 0

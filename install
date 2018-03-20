@@ -1,0 +1,37 @@
+#!/bin/bash
+
+# this script requires root elevation
+if [ "$EUID" -ne 0 ]
+then
+    echo "please run as root"
+    exit 1
+fi
+
+# if ~/.blockit/.bashrc.backup already exists, it's likely that blockit is already installed
+if [ -e ~/.blockit/.bashrc.backup ]
+then
+    echo "blockit is already installed"
+    exit 1
+fi
+
+# installation
+if [ ! -e ~/.blockit ]
+then    
+    if ! mv ~/blockit ~/.blockit
+    then
+        echo "could not find ~/blockit, aborting"
+        exit 1
+    fi
+fi
+sudo cp /etc/hosts /etc/hosts.backup
+cp ~/.bashrc ~/.blockit/.bashrc.backup
+chmod +x ~/.blockit/block ~/.blockit/unblock
+echo 'alias block="sudo ~/.blockit/block"' >> ~/.bashrc
+echo 'alias unblock="sudo ~/.blockit/unblock"' >> ~/.bashrc
+source ~/.bashrc
+
+echo "successfully installed blockit"
+echo "  - add sites to block by modifying ~/.blockit/sites.txt"
+echo "  - block sites by running $ block"
+echo "  - unblock sites by running $ unblock"
+echo "  - to uninstall, run $ ~/.blockit/uninstall"
