@@ -44,3 +44,5 @@ Unblocking specific sites has not yet been implemented, but is planned.
 To uninstall, run:
 
 	$ sudo bash ~/.blockit/uninstall
+
+*Please note:* The uninstallation relies on overwriting the current .bashrc and /etc/hosts files with backups that were created when blockit was first installed. If you've made changes since installation in either of these files, these changes will be lost. To preserve your changes, you need to manually uninstall blockit (check out the uninstall script to see what changes need to be made).
